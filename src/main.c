@@ -18,6 +18,13 @@ void enable_raw_mode() {
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
+/*
+All the print statements with numbers and escape codes are used from the ASCII
+Escape sequence provided by the
+https://www.gnu.org/software/screen/manual/html_node/Control-Sequences.html feel
+free to use it as a refrence to know what is going on if confused.
+*/
+
 void clearScreen() {
   printf("\033[1;1H\033[2J");
   fflush(stdout);
