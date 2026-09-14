@@ -23,10 +23,17 @@ void clearScreen() {
   fflush(stdout);
 }
 
+void printSideLines() {
+  for (int i = 0; i < 1000; i++) {
+    printf("~ \x1b[E");
+  }
+}
+
 int main() {
 
   enable_raw_mode();
   clearScreen();
+  printSideLines();
 
   char c;
 
