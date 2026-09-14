@@ -27,10 +27,28 @@ void printSideLines() {
   for (int i = 0; i < 1000; i++) {
     printf("~ \x1b[E");
   }
+  printf("\x1b[H");
+  fflush(stdout);
+}
+
+void moveCursor(char c) {
+  switch (c) {
+  case 'h':
+    printf("\x1b[D");
+    break;
+  case 'j':
+    printf("\x1b[B");
+    break;
+  case 'k':
+    printf("\x1b[A");
+    break;
+  case 'l':
+    printf("\x1b[C");
+    break;
+  }
 }
 
 int main() {
-
   enable_raw_mode();
   clearScreen();
   printSideLines();
@@ -38,6 +56,7 @@ int main() {
   char c;
 
   while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q') {
+    moveCursor(c);
     putchar(c);
     fflush(stdout);
   }
