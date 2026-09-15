@@ -3,7 +3,12 @@
 #include <termios.h>
 #include <unistd.h>
 
+#define ESC_KEY 27
+
 struct termios original_term;
+typedef enum { VIEWING, EDITING } editor_states;
+
+editor_states currentstate = VIEWING;
 
 void dis_raw_mode() { tcsetattr(STDIN_FILENO, TCSAFLUSH, &original_term); }
 
@@ -41,18 +46,19 @@ void printSideLines() {
 void moveCursor(char c) {
   switch (c) {
   case 'h':
-    printf("\x1b[D");
+    printf("\x1b[1D");
     break;
   case 'j':
-    printf("\x1b[B");
+    printf("\x1b[1B");
     break;
   case 'k':
-    printf("\x1b[A");
+    printf("\x1b[1A");
     break;
   case 'l':
-    printf("\x1b[C");
+    printf("\x1b[1C");
     break;
   }
+  fflush(stdout);
 }
 
 int main() {
@@ -63,9 +69,20 @@ int main() {
   char c;
 
   while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q') {
-    moveCursor(c);
-    putchar(c);
-    fflush(stdout);
+
+    if (c == ESC_KEY) {
+      currentstate = VIEWING;
+    }
+
+    if (currentstate == VIEWING) {
+      moveCursor(c);
+      if (c == 'i') {
+        currentstate = EDITING;
+      }
+    } else {
+      putchar(c);
+      fflush(stdout);
+    }
   }
 
   return 0;
