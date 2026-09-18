@@ -1,19 +1,13 @@
+#include "text.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#define INI_CHARS_PER_LINE 80
 
-typedef struct {
-  char *line;
-  size_t size;
-  size_t capacity;
-} TextData;
+LineData *initializing_text()
+{
 
-// Creating a dynamically allocatable data structure to store text data.
-TextData *dynamic_text() {
-
-  TextData *text = malloc(sizeof(TextData));
+  LineData *text = malloc(sizeof(LineData));
 
   text->line = malloc((sizeof(char)) * INI_CHARS_PER_LINE);
   text->size = 0;
@@ -23,12 +17,14 @@ TextData *dynamic_text() {
 }
 
 // Reallocate the size of data if the text size is less than dedicated size.
-void extend_line(TextData *text) {
+void extend_line(LineData *text)
+{
 
   size_t new_cap = text->capacity * 2;
   void *temp = realloc(text->line, new_cap);
 
-  if (temp == NULL && text->size > 0) {
+  if (temp == NULL && text->size > 0)
+  {
     perror("Error Shrinking the size of the text per line");
   }
 
@@ -36,27 +32,75 @@ void extend_line(TextData *text) {
   text->capacity = new_cap;
 }
 
-void enterText(TextData *text, char c) {
+void enterText(LineData *text, char c)
+{
 
-  if (text->size >= text->capacity) {
+  if (text->size >= text->capacity)
+  {
     extend_line(text);
   }
 
-  if (c != '\n' && c != EOF) {
+  // Add to the end of the array of lines and increase the size of the array
+  // after.
+  if (c != '\n' && c != EOF)
+  {
     text->line[text->size] = c;
     text->size++;
   }
 }
 
-int main(void) {
+Arr_Lines *CreateLines()
+{
+  const int amountofLines = 1000;
+  Arr_Lines *full_text = malloc(sizeof(Arr_Lines) * amountofLines);
 
-  TextData *text = dynamic_text();
-  char c;
-
-  while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q') {
-    enterText(text, c);
+  if (full_text == NULL)
+  {
+    perror("Error Creating the Full Text");
   }
-  printf("%s is the line and its size is %zu ; however its capacity is %zu",
-         text->line, text->size, text->capacity);
-  free(text);
+
+  for (int i = 0; i < amountofLines; i++)
+  {
+    full_text[i].lines = initializing_text();
+    full_text[i].capacity = INI_CHARS_PER_LINE;
+    full_text[i].size = 0;
+  }
+  return full_text;
+}
+
+int main(void)
+{
+
+  Arr_Lines *full_text = CreateLines();
+  char c;
+  int currText = 0;
+
+  while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q')
+  {
+
+    if (c == '\n')
+    {
+      enterText(full_text[currText].lines, '\0');
+      full_text->size++;
+      currText++;
+    }
+    else
+    {
+      enterText(full_text[currText].lines, c);
+    }
+  }
+
+  printf("%s ; %zu ; %zu", full_text[0].lines->line, full_text[0].lines->size,
+         full_text[0].lines->capacity);
+
+  for (int i = 0; i <= full_text->size; i++)
+  {
+    printf("%s ; %zu ; %zu", full_text[i].lines->line, full_text[i].lines->size,
+           full_text[i].lines->capacity);
+
+    free(full_text[i].lines->line);
+    free(full_text[i].lines);
+  }
+
+  free(full_text);
 }
